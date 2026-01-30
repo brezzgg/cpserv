@@ -2,6 +2,7 @@ package service
 
 import (
 	context "context"
+	"fmt"
 
 	"github.com/brezzgg/cpserv/clipboard"
 	"google.golang.org/grpc/codes"
@@ -24,6 +25,7 @@ func (s *Server) Read(context.Context, *Auth) (*Clipboard, error) {
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to read clipboard")
 	}
+	fmt.Printf("read len=%d\n", len(text))
 	return &Clipboard{
 		Text: text,
 	}, nil
@@ -34,5 +36,6 @@ func (s *Server) Write(ctx context.Context, req *WriteReq) (*Empty, error) {
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to write clipboard")
 	}
+	fmt.Printf("written len=%d\n", len(req.Clipboard.Text))
 	return nil, nil
 }

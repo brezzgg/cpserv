@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/brezzgg/cpserv/clipboard"
 	"github.com/brezzgg/cpserv/log"
@@ -38,6 +39,7 @@ var (
 			svc := service.New(clip)
 			service.RegisterClipboardServiceServer(server, svc)
 
+			fmt.Printf("server started on %s...\n", host)
 			fmt.Printf("failed to listen: %s\n", server.Serve(lis))
 		},
 	}
@@ -51,7 +53,11 @@ var (
 				log.Error(err.Error())
 			}
 			client := service.NewClipboardServiceClient(conn)
-			r, err := client.Read(context.TODO(), nil)
+
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second * 2)
+			defer cancel()
+
+			r, err := client.Read(ctx, nil)
 			if err != nil {
 				log.Error(fmt.Sprintf("failed to read clipboard from remote: %s\n", err.Error()))
 			}
@@ -60,8 +66,9 @@ var (
 	}
 
 	writeCmd = &cobra.Command{
-		Use:   "write",
+		Use:   "write -- [text...]",
 		Short: "Write to remote clipboard",
+		DisableFlagsInUseLine: true,
 		Run: func(cmd *cobra.Command, args []string) {
 			var text string
 
@@ -83,7 +90,11 @@ var (
 			defer conn.Close()
 
 			client := service.NewClipboardServiceClient(conn)
-			_, err = client.Write(context.TODO(), &service.WriteReq{
+
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second * 2)
+			defer cancel()
+
+			_, err = client.Write(ctx, &service.WriteReq{
 				Auth: nil,
 				Clipboard: &service.Clipboard{
 					Text: text,
