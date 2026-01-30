@@ -95,7 +95,7 @@ func Execute() {
 		&remote, "remote", "r", defaultHost, "set remote host",
 	)
 	serverCmd.PersistentFlags().StringVarP(
-		&host, "host", "h", defaultHost, "set host to listen",
+		&host, "host", "", defaultHost, "set host to listen",
 	)
 	rootCmd.CompletionOptions = cobra.CompletionOptions{
 		DisableDefaultCmd: true,
