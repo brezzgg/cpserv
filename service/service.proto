@@ -1,0 +1,23 @@
+syntax = "proto3";
+package cpserv.server;
+
+option go_package = "github.com/brezzgg/cpserv/service";
+
+service ClipboardService {
+  rpc Read(Auth) returns (Clipboard);
+  rpc Write(WriteReq) returns (Empty);
+}
+
+message WriteReq {
+  Clipboard clipboard = 1;
+  Auth auth = 2;
+}
+
+message Clipboard {
+  string text = 1;
+}
+
+// todo:
+message Auth {}
+
+message Empty {}
