@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/brezzgg/cpserv/clipboard"
 	"github.com/brezzgg/cpserv/log"
@@ -61,17 +62,31 @@ var (
 	writeCmd = &cobra.Command{
 		Use:   "write",
 		Short: "Write to remote clipboard",
-		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			var text string
+
+			dashIndex := cmd.ArgsLenAtDash()
+			if dashIndex >= 0 {
+				text = strings.Join(args, " ")
+			} else if len(args) > 0 {
+				text = strings.Join(args, " ")
+			} else {
+				log.Error("no text provided")
+				return
+			}
+
 			conn, err := grpc.NewClient(remote, grpc.WithTransportCredentials(insecure.NewCredentials()))
 			if err != nil {
 				log.Error(err.Error())
+				return
 			}
+			defer conn.Close()
+
 			client := service.NewClipboardServiceClient(conn)
 			_, err = client.Write(context.TODO(), &service.WriteReq{
 				Auth: nil,
 				Clipboard: &service.Clipboard{
-					Text: args[0],
+					Text: text,
 				},
 			})
 			if err != nil {
@@ -82,7 +97,7 @@ var (
 )
 
 const (
-	defaultHost = "127.0.0.1:56384"
+	defaultHost = "0.0.0.0:56384"
 )
 
 var (
